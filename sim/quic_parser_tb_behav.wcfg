@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="quic_parser_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="quic_offload_pkg" />
+            <top_module name="quic_parser_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="601.890 ns"></ZoomStartTime>
+      <ZoomEndTime time="621.371 ns"></ZoomEndTime>
+      <Cursor1Time time="614.410 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="327"></NameColumnWidth>
+      <ValueColumnWidth column_width="149"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="4" />
+   <wvobject fp_name="/quic_parser_tb/clock" type="logic">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
+   </wvobject>
+   <wvobject fp_name="/quic_parser_tb/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="group8" type="group">
+      <obj_property name="label">IO</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/quic_parser_tb/dut_d_in" type="array">
+         <obj_property name="ElementShortName">dut_d_in[31:0]</obj_property>
+         <obj_property name="ObjectShortName">dut_d_in[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/dut_md_in" type="array">
+         <obj_property name="ElementShortName">dut_md_in[21:0]</obj_property>
+         <obj_property name="ObjectShortName">dut_md_in[21:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/dut_d_out" type="array">
+         <obj_property name="ElementShortName">dut_d_out[31:0]</obj_property>
+         <obj_property name="ObjectShortName">dut_d_out[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/dut_md_out" type="array">
+         <obj_property name="ElementShortName">dut_md_out[37:0]</obj_property>
+         <obj_property name="ObjectShortName">dut_md_out[37:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group9" type="group">
+      <obj_property name="label">DUT internal</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="group75" type="group">
+         <obj_property name="label">Data</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/data_regs[0]" type="array">
+            <obj_property name="ElementShortName">[0][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[0][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/data_regs[1]" type="array">
+            <obj_property name="ElementShortName">[1][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[1][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/data_regs[2]" type="array">
+            <obj_property name="ElementShortName">[2][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[2][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/data_regs[3]" type="array">
+            <obj_property name="ElementShortName">[3][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[3][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/data_regs[4]" type="array">
+            <obj_property name="ElementShortName">[4][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[4][31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/data_regs[5]" type="array">
+            <obj_property name="ElementShortName">[5][31:0]</obj_property>
+            <obj_property name="ObjectShortName">[5][31:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group35" type="group">
+         <obj_property name="label">Metadata</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_0" type="array">
+            <obj_property name="ElementShortName">metadata_reg_0[21:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_0[21:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_1" type="array">
+            <obj_property name="ElementShortName">metadata_reg_1[25:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_1[25:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_2" type="array">
+            <obj_property name="ElementShortName">metadata_reg_2[25:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_2[25:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_3" type="array">
+            <obj_property name="ElementShortName">metadata_reg_3[25:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_3[25:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_4" type="array">
+            <obj_property name="ElementShortName">metadata_reg_4[33:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_4[33:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_5" type="array">
+            <obj_property name="ElementShortName">metadata_reg_5[37:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_5[37:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/quic_mask" type="array">
+         <obj_property name="ElementShortName">quic_mask[3:0]</obj_property>
+         <obj_property name="ObjectShortName">quic_mask[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_mask" type="array">
+         <obj_property name="ElementShortName">dcid_mask[5:0]</obj_property>
+         <obj_property name="ObjectShortName">dcid_mask[5:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/flags_mask" type="array">
+         <obj_property name="ElementShortName">flags_mask[3:0]</obj_property>
+         <obj_property name="ObjectShortName">flags_mask[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_start" type="logic">
+         <obj_property name="ElementShortName">dcid_start</obj_property>
+         <obj_property name="ObjectShortName">dcid_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_end" type="logic">
+         <obj_property name="ElementShortName">dcid_end</obj_property>
+         <obj_property name="ObjectShortName">dcid_end</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/packet_end" type="logic">
+         <obj_property name="ElementShortName">packet_end</obj_property>
+         <obj_property name="ObjectShortName">packet_end</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/strobe" type="array">
+         <obj_property name="ElementShortName">strobe[3:0]</obj_property>
+         <obj_property name="ObjectShortName">strobe[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/mac_mask" type="array">
+         <obj_property name="ElementShortName">mac_mask[19:0]</obj_property>
+         <obj_property name="ObjectShortName">mac_mask[19:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>
