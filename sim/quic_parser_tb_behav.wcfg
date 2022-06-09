@@ -11,9 +11,9 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="601.890 ns"></ZoomStartTime>
-      <ZoomEndTime time="621.371 ns"></ZoomEndTime>
-      <Cursor1Time time="614.410 ns"></Cursor1Time>
+      <ZoomStartTime time="833.767 ns"></ZoomStartTime>
+      <ZoomEndTime time="931.168 ns"></ZoomEndTime>
+      <Cursor1Time time="850.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="327"></NameColumnWidth>
@@ -119,11 +119,6 @@
          <obj_property name="ObjectShortName">dcid_mask[5:0]</obj_property>
          <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/flags_mask" type="array">
-         <obj_property name="ElementShortName">flags_mask[3:0]</obj_property>
-         <obj_property name="ObjectShortName">flags_mask[3:0]</obj_property>
-         <obj_property name="Radix">BINARYRADIX</obj_property>
-      </wvobject>
       <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_start" type="logic">
          <obj_property name="ElementShortName">dcid_start</obj_property>
          <obj_property name="ObjectShortName">dcid_start</obj_property>
@@ -139,6 +134,16 @@
       <wvobject fp_name="/quic_parser_tb/quic_parser_dut/strobe" type="array">
          <obj_property name="ElementShortName">strobe[3:0]</obj_property>
          <obj_property name="ObjectShortName">strobe[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/flags_mask" type="array">
+         <obj_property name="ElementShortName">flags_mask[3:0]</obj_property>
+         <obj_property name="ObjectShortName">flags_mask[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/packet_number_mask" type="array">
+         <obj_property name="ElementShortName">packet_number_mask[7:0]</obj_property>
+         <obj_property name="ObjectShortName">packet_number_mask[7:0]</obj_property>
          <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/quic_parser_tb/quic_parser_dut/mac_mask" type="array">

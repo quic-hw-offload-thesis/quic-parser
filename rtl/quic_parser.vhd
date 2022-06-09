@@ -138,12 +138,12 @@ begin
     quic_mask(0) <= '1' when (metadata_reg_4(C_MO_PROTO_BYTE_0+C_MS_PROTO-1 downto C_MO_PROTO_BYTE_0) = C_PROTO_1RTT_QUIC) else '0';
     
     -- Dcid metadata: last arrived of reg 4 & reg 3 & first arrived of reg 2
-    dcid_mask(5) <= metadata_reg_4(C_MO_DCID_BYTE_0);
-    dcid_mask(4) <= metadata_reg_3(C_MO_DCID_BYTE_3);
-    dcid_mask(3) <= metadata_reg_3(C_MO_DCID_BYTE_2);
-    dcid_mask(2) <= metadata_reg_3(C_MO_DCID_BYTE_1);
-    dcid_mask(1) <= metadata_reg_3(C_MO_DCID_BYTE_0);
-    dcid_mask(0) <= metadata_reg_2(C_MO_DCID_BYTE_3);
+    dcid_mask(5) <= metadata_reg_5(C_MO_DCID_BYTE_0);
+    dcid_mask(4) <= metadata_reg_4(C_MO_DCID_BYTE_3);
+    dcid_mask(3) <= metadata_reg_4(C_MO_DCID_BYTE_2);
+    dcid_mask(2) <= metadata_reg_4(C_MO_DCID_BYTE_1);
+    dcid_mask(1) <= metadata_reg_4(C_MO_DCID_BYTE_0);
+    dcid_mask(0) <= metadata_reg_3(C_MO_DCID_BYTE_3);
     
     -- Dcid ends somewhere in between if oldest byte is still dcid and newest isn't anymore
     dcid_end <= '1' when (dcid_mask(5) = '1' and dcid_mask(1) = '0') else '0';
@@ -172,10 +172,10 @@ begin
             packet_number_len <= "00";
         elsif rising_edge(clk_i) then
             case flags_mask is
-                when "0001" => packet_number_len <= data_regs(3)(1 downto 0);
-                when "0010" => packet_number_len <= data_regs(3)(9 downto 8);
-                when "0100" => packet_number_len <= data_regs(3)(17 downto 16);
-                when "1000" => packet_number_len <= data_regs(3)(25 downto 24);
+                when "0001" => packet_number_len <= data_regs(4)(1 downto 0);
+                when "0010" => packet_number_len <= data_regs(4)(9 downto 8);
+                when "0100" => packet_number_len <= data_regs(4)(17 downto 16);
+                when "1000" => packet_number_len <= data_regs(4)(25 downto 24);
                 when others => packet_number_len <= packet_number_len;
             end case;
         end if;
@@ -196,11 +196,26 @@ begin
             metadata_reg_4 <= (others => '0');
             metadata_reg_5 <= (others => '0'); 
         elsif rising_edge(clk_i) then
-            metadata_reg_1 <= x"0" & metadata_reg_0; -- Todo: concat correct masker signals
-            metadata_reg_2 <= metadata_reg_1;
-            metadata_reg_3 <= metadata_reg_2;
-            metadata_reg_4 <= x"0" & flags_mask & metadata_reg_3;
-            metadata_reg_5 <= x"0" & metadata_reg_4;
+            -- Shift metadata in
+            metadata_reg_1(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_0(G_MD_IN_WIDTH-1 downto 0);
+            metadata_reg_2(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_1(G_MD_IN_WIDTH-1 downto 0);
+            metadata_reg_3(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_2(G_MD_IN_WIDTH-1 downto 0);
+            metadata_reg_4(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_3(G_MD_IN_WIDTH-1 downto 0);
+            metadata_reg_5(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_4(G_MD_IN_WIDTH-1 downto 0);
+            -- Add Mac mask
+            metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+            metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+            metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+            metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+            metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+            -- Add Packet Number mask
+
+
+            -- metadata_reg_1(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & metadata_reg_0; -- Placeholder for 
+            -- metadata_reg_2(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= metadata_reg_1;
+            -- metadata_reg_3(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= metadata_reg_2;
+            -- metadata_reg_4(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & flags_mask & metadata_reg_3;
+            -- metadata_reg_5(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & metadata_reg_4;
         end if;
     end process ; -- P_MD_REG
     md_out_i <= metadata_reg_5;
