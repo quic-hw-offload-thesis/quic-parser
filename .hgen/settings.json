@@ -1,0 +1,9 @@
+{
+    "date-format": "%d %B %Y",
+    "keywords": {
+        "project-description": "QUIC Packet Parser",
+        "organization": "UHasselt/KULeuven - FIIW",
+        "author": "Lowie Deferme"
+    },
+    "shebang-by-default": true
+}
