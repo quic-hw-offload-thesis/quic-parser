@@ -43,11 +43,6 @@ architecture rtl of quic_parser is
     signal md_in_i : std_logic_vector(G_MD_IN_WIDTH-1 downto 0);
     signal md_out_i : std_logic_vector(G_MD_OUT_WIDTH-1 downto 0);
 
-    -- Fsm states
-    type T_fsm_state IS (R, F, PN, PL, M);  -- define states (Ready, Flags, Packet Number, Payload, Mac)
-    signal fsm_state : T_fsm_state; -- fsm state signal
-    signal fsm_state_next : T_fsm_state; -- next fsm state signal
-
     -- Control signals
     signal quic_mask : std_logic_vector(3 downto 0);
     signal dcid_mask : std_logic_vector(5 downto 0);
@@ -55,8 +50,10 @@ architecture rtl of quic_parser is
     signal packet_number_fixed_mask : std_logic_vector(3 downto 0); -- Four bit mask for the packet number, not shifted over multiple words
     signal dcid_end : std_logic;
     signal dcid_start : std_logic;
-    signal packet_end : std_logic;
-    signal strobe : std_logic_vector(3 downto 0);
+    signal packet_end_0 : std_logic;
+    signal packet_end_5 : std_logic;
+    signal strobe_0 : std_logic_vector(3 downto 0);
+    signal is_mac : std_logic;
 
     -- Masks
     signal flags_mask : std_logic_vector(3 downto 0);
@@ -72,7 +69,7 @@ architecture rtl of quic_parser is
     signal metadata_reg_1 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
     signal metadata_reg_2 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
     signal metadata_reg_3 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
-    signal metadata_reg_4 : std_logic_vector(G_MD_IN_WIDTH-1 + 12 downto 0); -- Mac, packet number and flags metadata per byte
+    signal metadata_reg_4 : std_logic_vector(G_MD_IN_WIDTH-1 + 8 downto 0); -- Mac and packet number metadata per byte
     signal metadata_reg_5 : std_logic_vector(G_MD_IN_WIDTH-1 + 16 downto 0); -- Mac, packet number, flags and payload metadata per byte
  
 begin
@@ -126,7 +123,7 @@ begin
         "00000000";
     
     -- Mac mask
-    mac_mask <= (not strobe & x"fff" & strobe) when (packet_end = '1') else (others => '0');
+    mac_mask <= (not strobe_0 & x"fff" & strobe_0) when (packet_end_0 = '1') else (others => '0');
     
     -----------------------------------------------------------------------------
     -- Control signals
@@ -151,9 +148,26 @@ begin
     -- Dcid starts somewhere in between if oldest byte is not dcid and newest is
     dcid_start <= '1' when (dcid_mask(4) = '0' and dcid_mask(0) = '1') else '0'; -- Fixme: is this signal necessary?
 
-    -- Packet ends when data last is '1' in newest data
-    packet_end <= metadata_reg_0(C_MO_DATA_LAST);
-    strobe <= metadata_reg_0(C_MO_STROBE+C_MS_STROBE-1 downto C_MO_STROBE);
+    -- Packet ends when data last is '1' in metadata
+    packet_end_0 <= metadata_reg_0(C_MO_DATA_LAST);
+    strobe_0 <= metadata_reg_0(C_MO_STROBE+C_MS_STROBE-1 downto C_MO_STROBE);
+    packet_end_5 <= metadata_reg_5(C_MO_DATA_LAST);
+
+    -- Mac starts when data last becomes '1' at reg 0 and ends when data last becomes '1' at reg 5
+    P_IS_MAC : process(clk_i, reset_i)
+    begin
+        if reset_i = '1' then
+            is_mac <= '0';
+        elsif rising_edge(clk_i) then
+            if packet_end_0 = '1' then
+                is_mac <= '1';
+            elsif packet_end_5 = '1' then
+                is_mac <= '0';
+            else
+                is_mac <= is_mac;
+            end if;
+        end if;
+    end process ; -- P_IS_MAC
 
     -- Note: 1-RTT Packet
     -- ------------------
@@ -202,14 +216,34 @@ begin
             metadata_reg_3(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_2(G_MD_IN_WIDTH-1 downto 0);
             metadata_reg_4(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_3(G_MD_IN_WIDTH-1 downto 0);
             metadata_reg_5(G_MD_IN_WIDTH-1 downto 0) <= metadata_reg_4(G_MD_IN_WIDTH-1 downto 0);
-            -- Add Mac mask
-            metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
-            metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
-            metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
-            metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
-            metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
-            -- Add Packet Number mask
 
+            -- Add Mac mask
+            if packet_end_0 = '1' then -- Set if packet ends at reg 0
+                metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(3 downto 0);
+                metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(7 downto 4);
+                metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(11 downto 8);
+                metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(15 downto 12);
+                metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(19 downto 16);
+            elsif is_mac = '1' then -- Shift if outgoing data is mac
+                metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+                metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH);
+                metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH);
+                metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH);
+                metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH);
+            else -- Reset otherwise
+                metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+                metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+                metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+                metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+                metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
+            end if;
+
+            -- Todo: Add Packet Number mask
+
+            -- Add flag byte mask
+            metadata_reg_5(G_MD_IN_WIDTH+12-1 downto G_MD_IN_WIDTH+8) <= flags_mask;
+
+            -- Todo: Add Payload mask
 
             -- metadata_reg_1(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & metadata_reg_0; -- Placeholder for 
             -- metadata_reg_2(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= metadata_reg_1;
@@ -233,29 +267,5 @@ begin
         end process ; -- P_D_REG
     end generate G_D_REG;
     d_out_i <= data_regs(C_NUMOF_REGS);
-    
-    -----------------------------------------------------------------------------
-    -- Finite State Machine
-    -----------------------------------------------------------------------------
-    P_NSF : process(fsm_state) -- Fixme: write better next state function
-    begin
-        case fsm_state is
-            when R => fsm_state_next <= F;-- when quic_mask /= b"0000" else R;
-            when F => fsm_state_next <= PN;
-            when PN => fsm_state_next <= PL; -- Todo: fsm next state function
-            when PL => fsm_state_next <= M; -- Todo: fsm next state function
-            when M => fsm_state_next <= R; -- Todo: fsm next state function
-            when others => fsm_state_next <= R;
-        end case;
-    end process ; -- P_NSF
-    
-    P_FSM : process(clk_i, reset_i)
-    begin
-        if reset_i = '1' then
-            fsm_state <= R;
-        elsif rising_edge(clk_i) then
-            fsm_state <= fsm_state_next;
-        end if;
-    end process ; -- P_FSM
     
 end architecture rtl;
