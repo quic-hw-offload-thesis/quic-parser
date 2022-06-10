@@ -43,17 +43,20 @@ architecture rtl of quic_parser is
     signal md_in_i : std_logic_vector(G_MD_IN_WIDTH-1 downto 0);
     signal md_out_i : std_logic_vector(G_MD_OUT_WIDTH-1 downto 0);
 
-    -- Control signals
-    signal quic_mask : std_logic_vector(3 downto 0);
-    signal dcid_mask : std_logic_vector(5 downto 0);
-    signal packet_number_len : std_logic_vector(1 downto 0);
+    -- Control/internal signals
+    signal quic_mask : std_logic_vector(3 downto 0); -- Fixme: Is quic mask used?
+    signal dcid_mask : std_logic_vector(5 downto 0);                -- Dcid mask of R5B0 & R4B3..0 & R2B3
+    signal packet_number_len : std_logic_vector(1 downto 0);        -- Raw packet number len field (= actual len-1)
     signal packet_number_fixed_mask : std_logic_vector(3 downto 0); -- Four bit mask for the packet number, not shifted over multiple words
-    signal dcid_end : std_logic;
-    signal dcid_start : std_logic;
-    signal packet_end_0 : std_logic;
-    signal packet_end_5 : std_logic;
-    signal strobe_0 : std_logic_vector(3 downto 0);
-    signal is_mac : std_logic;
+    signal dcid_end : std_logic;                    -- Pulse whenever dcid ends at reg 4  
+    signal dcid_end_delay : std_logic;              -- Pulse whenever dcid ends at reg 5
+    signal dcid_start : std_logic;                  -- Pulse whenever dcid starts at reg 4
+    signal packet_end_0 : std_logic;                -- Pulse whenever packet ends at reg 0
+    signal packet_end_5 : std_logic;                -- Pulse whenever packet ends at reg 5
+    signal strobe_0 : std_logic_vector(3 downto 0); -- Strobe of reg 0
+    signal is_mac_mask : std_logic;                 -- High whenever metadata is mac mask (thus should be shifted through without change)
+    signal packet_number_mask_delay : std_logic_vector(3 downto 0); -- Holds packet number mask for reg 5
+    signal is_payload : std_logic;                  -- High whenever payload in reg 5
 
     -- Masks
     signal flags_mask : std_logic_vector(3 downto 0);
@@ -69,7 +72,7 @@ architecture rtl of quic_parser is
     signal metadata_reg_1 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
     signal metadata_reg_2 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
     signal metadata_reg_3 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
-    signal metadata_reg_4 : std_logic_vector(G_MD_IN_WIDTH-1 + 8 downto 0); -- Mac and packet number metadata per byte
+    signal metadata_reg_4 : std_logic_vector(G_MD_IN_WIDTH-1 + 4 downto 0); -- Mac metadata per byte
     signal metadata_reg_5 : std_logic_vector(G_MD_IN_WIDTH-1 + 16 downto 0); -- Mac, packet number, flags and payload metadata per byte
  
 begin
@@ -124,9 +127,16 @@ begin
     
     -- Mac mask
     mac_mask <= (not strobe_0 & x"fff" & strobe_0) when (packet_end_0 = '1') else (others => '0');
-    
+
+    -- Payload mask
+    payload_mask <= 
+        "0000" when is_payload = '0' else
+        strobe_0 when packet_end_0 = '1' else
+        not packet_number_mask_delay(3 downto 0) when dcid_end_delay = '1' else
+        "1111";
+        
     -----------------------------------------------------------------------------
-    -- Control signals
+    -- Control/internal signals
     -----------------------------------------------------------------------------
 
     quic_mask(3) <= '1' when (metadata_reg_4(C_MO_PROTO_BYTE_3+C_MS_PROTO-1 downto C_MO_PROTO_BYTE_3) = C_PROTO_1RTT_QUIC) else '0';
@@ -144,6 +154,14 @@ begin
     
     -- Dcid ends somewhere in between if oldest byte is still dcid and newest isn't anymore
     dcid_end <= '1' when (dcid_mask(5) = '1' and dcid_mask(1) = '0') else '0';
+    P_DCID_END : process(clk_i, reset_i)
+    begin
+        if reset_i = '1' then
+            dcid_end_delay <= '0';
+        elsif rising_edge(clk_i) then
+            dcid_end_delay <= dcid_end;
+        end if;
+    end process ; -- P_DCID_END
 
     -- Dcid starts somewhere in between if oldest byte is not dcid and newest is
     dcid_start <= '1' when (dcid_mask(4) = '0' and dcid_mask(0) = '1') else '0'; -- Fixme: is this signal necessary?
@@ -157,17 +175,45 @@ begin
     P_IS_MAC : process(clk_i, reset_i)
     begin
         if reset_i = '1' then
-            is_mac <= '0';
+            is_mac_mask <= '0';
         elsif rising_edge(clk_i) then
             if packet_end_0 = '1' then
-                is_mac <= '1';
+                is_mac_mask <= '1';
             elsif packet_end_5 = '1' then
-                is_mac <= '0';
+                is_mac_mask <= '0';
             else
-                is_mac <= is_mac;
+                is_mac_mask <= is_mac_mask;
             end if;
         end if;
     end process ; -- P_IS_MAC
+
+    -- Only 4 lsb of packet number mask are needed for packet number mask delay since the rest is already written and shifted out
+    P_PND : process(clk_i, reset_i)
+    begin
+        if reset_i = '1' then
+            packet_number_mask_delay <= (others => '0');
+        elsif rising_edge(clk_i) then
+            packet_number_mask_delay <= packet_number_mask(3 downto 0);
+        end if;
+    end process ; -- P_PND
+
+    -- Payload starts when packet number ends at reg 5 and stops when data valid at reg 0
+    P_IPL : process(clk_i, reset_i)
+    begin
+        if reset_i = '1' then
+            is_payload <= '0';
+        elsif rising_edge(clk_i) then
+            if dcid_end_delay = '1' then
+                is_payload <= '1';
+            elsif dcid_end = '1' and packet_number_mask(3 downto 0) /= "0000" then
+                is_payload <= '1';
+            elsif packet_end_0 = '1' then
+                is_payload <= '0';
+            else
+                is_payload <= is_payload;
+            end if;
+        end if;
+    end process ; -- P_IPL
 
     -- Note: 1-RTT Packet
     -- ------------------
@@ -224,7 +270,7 @@ begin
                 metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(11 downto 8);
                 metadata_reg_4(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(15 downto 12);
                 metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= mac_mask(19 downto 16);
-            elsif is_mac = '1' then -- Shift if outgoing data is mac
+            elsif is_mac_mask = '1' then -- Shift if outgoing data is mac
                 metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
                 metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= metadata_reg_1(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH);
                 metadata_reg_3(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= metadata_reg_2(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH);
@@ -238,18 +284,21 @@ begin
                 metadata_reg_5(G_MD_IN_WIDTH+4-1 downto G_MD_IN_WIDTH) <= (others => '0');
             end if;
 
-            -- Todo: Add Packet Number mask
+            -- Add Packet Number mask
+            if dcid_end = '1' then -- Set reg 5 metadata when dcid ends at reg 4
+                metadata_reg_5(G_MD_IN_WIDTH+8-1 downto G_MD_IN_WIDTH+4) <= packet_number_mask(7 downto 4);
+            elsif dcid_end_delay = '1' then -- Shift if outgoing data is packet number
+                metadata_reg_5(G_MD_IN_WIDTH+8-1 downto G_MD_IN_WIDTH+4) <= packet_number_mask_delay(3 downto 0);
+            else -- Reset otherwise
+                metadata_reg_5(G_MD_IN_WIDTH+8-1 downto G_MD_IN_WIDTH+4) <= (others => '0');
+            end if;
 
             -- Add flag byte mask
             metadata_reg_5(G_MD_IN_WIDTH+12-1 downto G_MD_IN_WIDTH+8) <= flags_mask;
 
             -- Todo: Add Payload mask
+            metadata_reg_5(G_MD_IN_WIDTH+16-1 downto G_MD_IN_WIDTH+12) <= payload_mask;
 
-            -- metadata_reg_1(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & metadata_reg_0; -- Placeholder for 
-            -- metadata_reg_2(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= metadata_reg_1;
-            -- metadata_reg_3(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= metadata_reg_2;
-            -- metadata_reg_4(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & flags_mask & metadata_reg_3;
-            -- metadata_reg_5(G_MD_IN_WIDTH+4 downto G_MD_IN_WIDTH) <= x"0" & metadata_reg_4;
         end if;
     end process ; -- P_MD_REG
     md_out_i <= metadata_reg_5;

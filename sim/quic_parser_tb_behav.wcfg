@@ -11,9 +11,9 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="983.600 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,003.281 ns"></ZoomEndTime>
-      <Cursor1Time time="1,000.000 ns"></Cursor1Time>
+      <ZoomStartTime time="225.609 ns"></ZoomStartTime>
+      <ZoomEndTime time="276.423 ns"></ZoomEndTime>
+      <Cursor1Time time="259.588 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="327"></NameColumnWidth>
@@ -84,7 +84,6 @@
       <wvobject fp_name="group35" type="group">
          <obj_property name="label">Metadata</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_0" type="array">
             <obj_property name="ElementShortName">metadata_reg_0[21:0]</obj_property>
             <obj_property name="ObjectShortName">metadata_reg_0[21:0]</obj_property>
@@ -102,18 +101,13 @@
             <obj_property name="ObjectShortName">metadata_reg_3[25:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_4" type="array">
-            <obj_property name="ElementShortName">metadata_reg_4[33:0]</obj_property>
-            <obj_property name="ObjectShortName">metadata_reg_4[33:0]</obj_property>
+            <obj_property name="ElementShortName">metadata_reg_4[29:0]</obj_property>
+            <obj_property name="ObjectShortName">metadata_reg_4[29:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/quic_parser_tb/quic_parser_dut/metadata_reg_5" type="array">
             <obj_property name="ElementShortName">metadata_reg_5[37:0]</obj_property>
             <obj_property name="ObjectShortName">metadata_reg_5[37:0]</obj_property>
          </wvobject>
-      </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/quic_mask" type="array">
-         <obj_property name="ElementShortName">quic_mask[3:0]</obj_property>
-         <obj_property name="ObjectShortName">quic_mask[3:0]</obj_property>
-         <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_mask" type="array">
          <obj_property name="ElementShortName">dcid_mask[5:0]</obj_property>
@@ -125,41 +119,28 @@
          <obj_property name="ObjectShortName">strobe_0[3:0]</obj_property>
          <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_start" type="logic">
-         <obj_property name="ElementShortName">dcid_start</obj_property>
-         <obj_property name="ObjectShortName">dcid_start</obj_property>
-      </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/dcid_end" type="logic">
-         <obj_property name="ElementShortName">dcid_end</obj_property>
-         <obj_property name="ObjectShortName">dcid_end</obj_property>
-      </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/flags_mask" type="array">
-         <obj_property name="ElementShortName">flags_mask[3:0]</obj_property>
-         <obj_property name="ObjectShortName">flags_mask[3:0]</obj_property>
-         <obj_property name="Radix">BINARYRADIX</obj_property>
-      </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/packet_number_len" type="array">
-         <obj_property name="ElementShortName">packet_number_len[1:0]</obj_property>
-         <obj_property name="ObjectShortName">packet_number_len[1:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/packet_number_fixed_mask" type="array">
-         <obj_property name="ElementShortName">packet_number_fixed_mask[3:0]</obj_property>
-         <obj_property name="ObjectShortName">packet_number_fixed_mask[3:0]</obj_property>
-         <obj_property name="Radix">BINARYRADIX</obj_property>
-      </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/packet_number_mask" type="array">
-         <obj_property name="ElementShortName">packet_number_mask[7:0]</obj_property>
-         <obj_property name="ObjectShortName">packet_number_mask[7:0]</obj_property>
-         <obj_property name="Radix">BINARYRADIX</obj_property>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/is_mac_mask" type="logic">
+         <obj_property name="ElementShortName">is_mac_mask</obj_property>
+         <obj_property name="ObjectShortName">is_mac_mask</obj_property>
       </wvobject>
       <wvobject fp_name="/quic_parser_tb/quic_parser_dut/mac_mask" type="array">
          <obj_property name="ElementShortName">mac_mask[19:0]</obj_property>
          <obj_property name="ObjectShortName">mac_mask[19:0]</obj_property>
          <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/is_mac" type="logic">
-         <obj_property name="ElementShortName">is_mac</obj_property>
-         <obj_property name="ObjectShortName">is_mac</obj_property>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/is_packet_number_mask" type="logic">
+         <obj_property name="ElementShortName">is_packet_number_mask</obj_property>
+         <obj_property name="ObjectShortName">is_packet_number_mask</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/packet_number_mask" type="array">
+         <obj_property name="ElementShortName">packet_number_mask[7:0]</obj_property>
+         <obj_property name="ObjectShortName">packet_number_mask[7:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/quic_parser_tb/quic_parser_dut/flags_mask" type="array">
+         <obj_property name="ElementShortName">flags_mask[3:0]</obj_property>
+         <obj_property name="ObjectShortName">flags_mask[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>
