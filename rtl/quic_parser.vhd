@@ -44,13 +44,11 @@ architecture rtl of quic_parser is
     signal md_out_i : std_logic_vector(G_MD_OUT_WIDTH-1 downto 0);
 
     -- Control/internal signals
-    signal quic_mask : std_logic_vector(3 downto 0); -- Fixme: Is quic mask used?
     signal dcid_mask : std_logic_vector(5 downto 0);                -- Dcid mask of R5B0 & R4B3..0 & R2B3
     signal packet_number_len : std_logic_vector(1 downto 0);        -- Raw packet number len field (= actual len-1)
     signal packet_number_fixed_mask : std_logic_vector(3 downto 0); -- Four bit mask for the packet number, not shifted over multiple words
     signal dcid_end : std_logic;                    -- Pulse whenever dcid ends at reg 4  
     signal dcid_end_delay : std_logic;              -- Pulse whenever dcid ends at reg 5
-    signal dcid_start : std_logic;                  -- Pulse whenever dcid starts at reg 4
     signal packet_end_0 : std_logic;                -- Pulse whenever packet ends at reg 0
     signal packet_end_5 : std_logic;                -- Pulse whenever packet ends at reg 5
     signal strobe_0 : std_logic_vector(3 downto 0); -- Strobe of reg 0
@@ -139,11 +137,6 @@ begin
     -- Control/internal signals
     -----------------------------------------------------------------------------
 
-    quic_mask(3) <= '1' when (metadata_reg_4(C_MO_PROTO_BYTE_3+C_MS_PROTO-1 downto C_MO_PROTO_BYTE_3) = C_PROTO_1RTT_QUIC) else '0';
-    quic_mask(2) <= '1' when (metadata_reg_4(C_MO_PROTO_BYTE_2+C_MS_PROTO-1 downto C_MO_PROTO_BYTE_2) = C_PROTO_1RTT_QUIC) else '0';
-    quic_mask(1) <= '1' when (metadata_reg_4(C_MO_PROTO_BYTE_1+C_MS_PROTO-1 downto C_MO_PROTO_BYTE_1) = C_PROTO_1RTT_QUIC) else '0';
-    quic_mask(0) <= '1' when (metadata_reg_4(C_MO_PROTO_BYTE_0+C_MS_PROTO-1 downto C_MO_PROTO_BYTE_0) = C_PROTO_1RTT_QUIC) else '0';
-    
     -- Dcid metadata: last arrived of reg 4 & reg 3 & first arrived of reg 2
     dcid_mask(5) <= metadata_reg_5(C_MO_DCID_BYTE_0);
     dcid_mask(4) <= metadata_reg_4(C_MO_DCID_BYTE_3);
@@ -162,9 +155,6 @@ begin
             dcid_end_delay <= dcid_end;
         end if;
     end process ; -- P_DCID_END
-
-    -- Dcid starts somewhere in between if oldest byte is not dcid and newest is
-    dcid_start <= '1' when (dcid_mask(4) = '0' and dcid_mask(0) = '1') else '0'; -- Fixme: is this signal necessary?
 
     -- Packet ends when data last is '1' in metadata
     packet_end_0 <= metadata_reg_0(C_MO_DATA_LAST);
@@ -296,7 +286,7 @@ begin
             -- Add flag byte mask
             metadata_reg_5(G_MD_IN_WIDTH+12-1 downto G_MD_IN_WIDTH+8) <= flags_mask;
 
-            -- Todo: Add Payload mask
+            -- Add Payload mask
             metadata_reg_5(G_MD_IN_WIDTH+16-1 downto G_MD_IN_WIDTH+12) <= payload_mask;
 
         end if;
