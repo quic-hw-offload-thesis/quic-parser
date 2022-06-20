@@ -187,6 +187,7 @@ begin
         end if;
     end process ; -- P_PND
 
+    -- Fixme: Only if 1rtt quic
     -- Payload starts when packet number ends at reg 5 and stops when data valid at reg 0
     P_IPL : process(clk_i, reset_i)
     begin
@@ -205,8 +206,9 @@ begin
         end if;
     end process ; -- P_IPL
 
-    -- Note: 1-RTT Packet
-    -- ------------------
+    -- Fixme: Only if 1rtt quic
+    -- Note: 1-RTT Packet format:
+    -- --------------------------
     --     Header Form (1) = 0,
     --     Fixed Bit (1) = 1,
     --     Spin Bit (1),
